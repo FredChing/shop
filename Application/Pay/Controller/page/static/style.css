@@ -1,0 +1,36 @@
+
+.bg-white{background:#fff;}
+
+
+.my-right{float:right;}
+.div-align{padding: 10px;}
+.btn{background: #cecece; height: 40px; line-height: 40px; border-radius: 5px; color: #fff; font-weight: bold; text-align: center;}
+.div-align .btn{width: 100%;}
+.my-time.orange{color: #ff0138; border-color: #ff0138;}
+.btn.orange{background: #ff0138;}
+
+
+
+/*9.18 by mxx*/
+.copyright{text-align:center; font-size:12px; line-height:20px; color:#a9a9a9;}
+.copyright b{font-weight:normal; color:#1eb9f2;}
+
+.m10{margin:0 10px;}
+.price{padding:40px 0; text-align:center; font-size:20px; font-weight:bold;}
+.orderList{padding: 10px;}
+.orderList li{padding: 10px 0; display:-webkit-box; clear:both; overflow:hidden;}
+.orderList p{line-height:20px; color:#777}
+.orderList .orderNr{box-flex:1; -webkit-box-flex:1; display:block; text-align:right;}
+
+.btn.blue{background: #1eb9f2;}
+
+
+
+.price .wenz{display:block; margin-bottom:15px; font-size:12px; font-weight:normal;}
+
+.price .success{display:inline-block; width:100px; height:100px; background:url(/images/success.png); background-size:100% 100%;}
+
+.price .success{display:inline-block; width:100px; height:100px; background:url(/images/success.png); background-size:100% 100%;}
+.btn.green{background:#1aac19;}
+.h-black{background:#373a41;}
+.header .back{display:inline-block; position:absolute; left:0; top:0; width:40px; height:40px; background:url(/images/back.png) no-repeat center center; background-size:40% 40%;}

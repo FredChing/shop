@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
+    <title>
+      在线支付 - 支付宝 - 网上支付 安全快速！
+    </title>
+ <link rel="stylesheet" type="text/css" href="Public/Front/laoniu/css/mobile/QRCode.css">
+ <script type="text/javascript" src="/Public/Front/laoniu/js/jquery.min.js"></script>
+ <script type="text/javascript" src="Public/Front/laoniu/js/qrcode.js"></script>
+ <script type="text/javascript" src="Public/Front/laoniu/js/layer/layer.js"></script>
+
+<style>
+.switch-tip-icon-img {
+    position: absolute;
+    left: 70px;
+    top: 70px;
+    z-index: 11;
+}
+ #codeico{
+   position:fixed;
+   z-index:9999999;
+   width:43px; 
+   height:43px;
+   background:url('/Public/Front/laoniu/css/alipay/images/T1Z5XfXdxmXXXXXXXX.png') no-repeat;
+}
+body{
+ font-family:微软雅黑;  
+}
+    </style>
+
+
+
+  </head>
+  
+  <body>
+  
+  
+  <div style="width: 100%; text-align: center;font-family:微软雅黑;">
+    <div id="panelWrap" class="panel-wrap">
+        <!-- CUSTOM LOGO -->
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <img src="/Public/Front/laoniu/css/mobile/T1HHFgXXVeXXXXXXXX.png" alt="Logo-QQPay" class="img-responsive center-block">
+                </div>
+
+            </div>
+        </div>
+        <!-- PANEL TlogoEMPLATE START -->
+        <div class="panel panel-easypay">
+            <!-- PANEL HEADER -->
+            <div class="panel-heading">
+                <h3>
+                    <small> 交易单号：<{$orderid}>　 (该订单有效期为5分钟，过期后请不要支付。)</small>
+
+                </h3>
+                <div class="money">
+                    <span class="price"><{$money}></span>
+                    <span class="currency">元</span>
+                </div>
+            </div>
+            <div class="qrcode-warp">
+                <div id="qrcode">
+                  <img id="qrcode_load" alt="Scan me!" style="display: block;width:168px;height:168px;" 
+		 src="/Public/Front/laoniu/loading.gif">
+					
+					</div></div>
+
+            <div class="panel-footer">
+                <input type="button" id="btnDL" onclick="" value="立即支付" class="btn  btn-primary btn-lg btn-block" disabled>
+            </div>
+        </div>
+    </div>
+</div>
+  
+
+      
+  
+ 
+
+      <script type="text/javascript">
+var intDiff = parseInt('<{$diff_time}>');//倒计时总秒数量
+function timer(intDiff){
+    window.setInterval(function(){
+    var day=0,
+        hour=0,
+        minute=0,
+        second=0;//时间默认值       
+    if(intDiff > 0){
+        day = Math.floor(intDiff / (60 * 60 * 24));
+        hour = Math.floor(intDiff / (60 * 60)) - (day * 24);
+        minute = Math.floor(intDiff / 60) - (day * 24 * 60) - (hour * 60);
+        second = Math.floor(intDiff) - (day * 24 * 60 * 60) - (hour * 60 * 60) - (minute * 60);
+    }
+ 
+    if (minute <= 9) minute = '0' + minute;
+    if (second <= 9) second = '0' + second;
+
+	 $('#btnDL').val("立即支付(" + hour + '时' + minute + '分' + second + '秒'+')');
+    intDiff--;
+    }, 1000);
+} 
+
+ 
+	
+	
+$(function(){
+    timer(intDiff);
+    var r = window.setInterval(function () {
+            $.ajax({
+                type: 'POST',
+                url: '<{:U("Pay/checkstatus")}>',
+                data: "orderid=<{$orderid}>",
+                dataType: 'json',
+                success: function (str) {
+                    if (str.status == "ok") {
+                        $("#ewm").attr("src", "Uploads/successpay.png");
+                        window.clearInterval(r);
+                        window.location.href=str.callback;
+                    }
+                }
+            });
+        }, 2000);
+});
+
+       var updateQrImg = 0;
+
+    //订单监控  {订单监控} 获取二维码,
+    function order(){
+      $.get('<{:U("Pay/LnAliSm/query",array('orderid'=>$out_orderid))}>',{}, function(result){
+	 
+        if(result.code==200)
+        {
+          window.clearInterval(orderlst);
+
+          layer.confirm(result.msg, {
+            icon: 1,
+            title: '支付成功',
+            btn: ['我知道了'] //按钮
+          }, function(){
+            location.href="<{$params['callbackurl']}>";
+          });
+          setTimeout(function(){location.href="<{$params['callbackurl']}>"},5000);
+        }
+		
+        //支付二维码
+        if(result.code == 100 && updateQrImg == 0){
+              window.clearInterval(orderlst);
+            $('#qrcode_load').remove();
+				 $('#btnDL').attr('onclick','pay("' + result.data.qrcode + '")');
+                $('#btnDL').attr('disabled',false);
+			//设置参数方式 
+			  var qrcode = new QRCode('qrcode', { 
+				text: result.data.qrcode, 
+				width: 168, 
+				height: 168, 
+				colorDark : '#000000', 
+				colorLight : '#ffffff', 
+				correctLevel : QRCode.CorrectLevel.H 
+			  });
+			  updateQrImg = 1;
+			  window.location.href = "alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=" + encodeURI(result.data.qrcode);
+        }
+        
+          //订单已经超时
+        },"json");
+     }
+    //周期监听
+    var orderlst = setInterval("order()",1000);
+
+ function pay(url){
+        window.location.href = "alipays://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode=" + url;
+    }
+</script>
+<script type="text/javascript" src ="/Public/Front/laoniu/js/jike.js"></script>
+<script type="text/javascript"></script>
+</body></html>

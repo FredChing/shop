@@ -1,0 +1,155 @@
+<include file="Public/header"/>
+<div class="row">
+    <div class="col-md-12">
+        <div class="ibox-content">
+            <form class="layui-form" action="" autocomplete="off" id="qrcodeform">
+                <input type="hidden" name="id" value="<{$_GET['id']}>">
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">名称：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="b[name]" lay-verify="" autocomplete="off" placeholder=""
+                               class="layui-input" value="<{$b.name}>" lay-verify="required">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">卡号：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="b[card]" lay-verify="" autocomplete="off" placeholder=""
+                               class="layui-input" value="<{$b.card}>" lay-verify="required">
+                    </div>
+                </div>
+                <!-- <div class="layui-form-item">
+                    <label class="layui-form-label">价格：</label>
+                    <div class="layui-input-block">
+                        <input type="input" name="b[price]" lay-verify="" autocomplete="off" placeholder=""
+                               class="layui-input" value="<{$b.price}>" lay-verify="required">
+                    </div>
+                </div> -->
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="b[intro]" lay-verify="" autocomplete="off" placeholder=""
+                               class="layui-input" value="<{$b.intro}>">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">支付类型：</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="b[pay_type]" value="1" title="支付宝" <if
+                            condition="$b.pay_type eq 0 || $b.pay_type eq 1">checked
+                    </if>>
+                        <input type="radio" name="b[pay_type]" value="2" title="微信" <if
+                            condition="$b.pay_type eq 2">checked
+                    </if>>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">二维码图片：</label>
+                    <div class="layui-upload">
+                        <button type="button" class="layui-btn" id="test1">上传图片</button>
+                        <div class="layui-upload-list">
+                        <div style="width: 250px;margin: 0 auto">
+                            <input type="hidden" name="b[path]" lay-filter="required" id="path_hidden" autocomplete="off"  class="layui-input" value="<{$b.path}>">
+                            <img class="layui-upload-img" style="width: 100%" src="<{$b.path}>" id="demo1">
+                            <p id="demoText"></p>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Alipay URL：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="b[alipay_url]" lay-verify="" autocomplete="off" placeholder=""
+                               class="layui-input" value="<{$b.alipay_url}>">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态：</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="b[status]" value="0" title="未激活" <if
+                            condition="$b.status eq 0">checked
+                    </if>>
+                        <input type="radio" name="b[status]" value="1" title="已激活" <if
+                            condition="$b.status eq 1">checked
+                    </if>>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit="" lay-filter="save">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<include file="Public/footer"/>
+<script>
+    layui.use(['laydate', 'form', 'layer', 'table', 'element','upload'], function() {
+        var laydate = layui.laydate //日期
+            , form = layui.form //分页
+            , layer = layui.layer //弹层
+            , table = layui.table //表格
+            , element = layui.element //元素操作
+            , upload = layui.upload;
+
+        //普通图片上传
+        var uploadInst = upload.render({
+            elem: '#test1'
+            ,url: '<{:U("Qrcode/upload")}>'
+            ,before: function(obj){
+              //预读本地文件示例，不支持ie8
+              obj.preview(function(index, file, result){
+                $('#demo1').attr('src', result); //图片链接（base64）
+              });
+            }
+            ,done: function(res){
+              $('#path_hidden').val(res.data.src);
+              return layer.msg(res['msg']);
+            }
+            ,error: function(){
+              //演示失败状态，并实现重传
+              var demoText = $('#demoText');
+              demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-mini demo-reload">重试</a>');
+              demoText.find('.demo-reload').on('click', function(){
+                uploadInst.upload();
+              });
+            }
+        });
+
+        //监听提交
+        form.on('submit(save)', function(data){
+            $.ajax({
+                url:"<{:U('Qrcode/detail')}>",
+                type:"post",
+                data:$('#qrcodeform').serialize(),
+                success:function(res){
+                    if(res.status){
+                        layer.alert("编辑成功", {icon: 6},function () {
+                            parent.location.reload();
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(index);
+                        });
+                    }else{
+                        layer.alert("操作失败"+res.msg, {icon: 5},function () {
+                            // parent.location.reload();
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(index);
+                        });
+                    }
+                }
+            });
+            return false;
+        });
+
+    });
+</script>
+</body>
+</html>
